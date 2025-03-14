@@ -2,11 +2,6 @@ pipeline {
     agent none
     stages {
         stage('Build with Kaniko') {
-            // 这段 Demo4 才需要，Demo1 不演示，突出 Git 提交全部都会触发的特性
-            when {
-                changeset "**/worker/*.*"
-            }
-            // 这段 Demo4 才需要
             agent {
                 kubernetes {
                     defaultContainer 'kaniko'
@@ -39,7 +34,7 @@ spec:
             }
 
             environment {
-                HARBOR_URL     = credentials('harbor-url')
+                HARBOR_URL     = "https://harbor.ismyfree.world"
                 IMAGE_PUSH_DESTINATION="${HARBOR_URL}/vote/worker"
                 GIT_COMMIT="${checkout (scm).GIT_COMMIT}"
                 IMAGE_TAG = "${BRANCH_NAME}-${GIT_COMMIT}"
@@ -52,7 +47,7 @@ spec:
                     withEnv(['PATH+EXTRA=/busybox']) {
                         sh '''#!/busybox/sh
                             cd worker
-                            /kaniko/executor --context `pwd` --destination $IMAGE_PUSH_DESTINATION --insecure --build-arg "TARGETPLATFORM='linux/amd64'" --build-arg "BUILDPLATFORM='linux/amd64'"
+                            /kaniko/executor --context `pwd` --destination $IMAGE_PUSH_DESTINATION --insecure
                         '''
                     }
                 }
